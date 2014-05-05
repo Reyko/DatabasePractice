@@ -8,6 +8,8 @@ class Fruit
   attr_accessor :country_of_origin
 
 
+  attr_accessor :attribute
+
 
   def self.make_from_user_questions
    
@@ -51,13 +53,37 @@ class Fruit
        sql = "SELECT * FROM fruits"
        
        db.execute(sql) 
-
-
     end  
-
   end
 
+  def self.read_from_user_questions
 
+    f = Fruit.new
+
+    puts "What attribute would you like to read?"
+    puts "1. I want to read all the attributes of the table"
+    puts "2. I want to read specific attributes of the table"
+    
+    choice = gets.strip.chomp
+
+    case choice
+
+      when 1
+
+        sql = "SELECT * FROM fruits"
+        db.execute(sql)
+
+      when 2 
+
+        puts "Please select the attributes you wish to read seperated by space"
+        attributes = gets.strip.chomp
+        attributes.split(" ").join(",")!
+
+        sql = "SELECT ? FROM fruits"
+        db.execute(sql,attributes)
+
+      end
+  end
 
 end
 
