@@ -97,6 +97,36 @@ class Fruit
     end      
   end
 
+  def self.delete_from_user_questions
+    f = Fruit.new
+
+    puts "Please select an option"
+    puts "1. I want to delete all the entries of the table"
+    puts "2. I want to delete a specific entry of the table"
+
+    choice = gets.strip.chomp.to_i
+
+
+    case choice
+
+      when 1
+        sql = "DELETE FROM fruits"
+        db.execute(sql)
+      when 2
+        puts "Please select the id you wish to delete"
+
+        sql = "SELECT * FROM fruits"
+        db.execute(sql)
+
+        selection = gets.chomp.to_i
+
+        sql = "DELETE FROM fruits where id = ?"
+        db.execute(sql,selection)
+
+      end
+
+
+  end 
 end
 
 
