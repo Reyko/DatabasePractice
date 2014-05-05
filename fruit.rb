@@ -1,4 +1,6 @@
 require 'sqlite3'
+require 'pry'
+
 
 class Fruit
   attr_accessor :name
@@ -8,7 +10,11 @@ class Fruit
   attr_accessor :country_of_origin
 
 
-  db = SQLITE3::Database.new 'fruits.db'
+  def self.connect_to_db
+    db = SQLite3::Database.new 'fruits.db' 
+    yield db
+  end
+
   def self.make_from_user_questions
    
     f = Fruit.new
@@ -21,35 +27,42 @@ class Fruit
     f.colour = gets.strip.chomp
 
     puts "Is your fruit prickly?"
-    f.prickly_or_not = gets.strip.chomp.to_i
+    f.prickly_or_not = gets.strip.chomp
 
     puts "Does it require peeling?"
-    f.requires_peeling = gets.strip.chomp.to_i
+    f.requires_peeling = gets.strip.chomp
 
     puts "What is the country of origin?"
     f.country_of_origin = gets.strip.chomp
 
-  
-    begin
+   
+    
 
-      sql = "CREATE TABLE fruits(id integer primary key autoincrement,name text,
-         colour text, prickly_or_not integer, requires_peeling integer, country_of_origin text)"
+     connect_to_db do |db|
 
-      db.execute(sql)
+        begin
+            sql = "CREATE TABLE fruits(id integer primary key autoincrement,name text,
+               colour text, prickly_or_not integer, requires_peeling integer, country_of_origin text)"
 
-      sql = "INSERT INTO fruits (name text, 
-        colour text, prickly_or_not integer, requires_peeling integer, country_of_origin text) 
-        VALUES(?,?,?,?,?)"
-      db.execute(sql,f.name,f.colour,f.prickly_or_not,f.requires_peeling,f.country_of_origin)
+            db.execute(sql)
+          
+         
+        rescue Exception=>e 
+      
+            sql = "INSERT INTO fruits (name,colour,prickly_or_not,requires_peeling,country_of_origin) VALUES(?,?,?,?,?)"
+            db.execute(sql,f.name,f.colour,f.prickly_or_not,f.requires_peeling,f.country_of_origin)
 
+            binding.pry
+            Crud.selection
+            
+        ensure
+           
+            sql = "INSERT INTO fruits (name,colour, prickly_or_not, requires_peeling, country_of_origin) VALUES(?,?,?,?,?)"
 
+            db.execute(sql,f.name,f.colour,f.prickly_or_not,f.requires_peeling,f.country_of_origin)
+        end  
 
-    rescue
-
-       sql = "SELECT * FROM fruits"
-       
-       db.execute(sql) 
-    end  
+    end
   end
 
   def self.read_from_user_questions
@@ -60,20 +73,33 @@ class Fruit
     puts "1. I want to read all the attributes of the table"
     puts "2. I want to read specific attributes of the table"
     
-    choice = gets.chomp
+    choice = gets.chomp.to_i
 
     case choice
 
       when 1
 
-        sql = "SELECT * FROM fruits"
-        db.execute(sql)
+        connect_to_db do |db|
+          sql = "SELECT * FROM fruits"
+          result = db.execute(sql)
+          binding.pry
+          result.each do |row|
+
+            row.each do |attribute|
+
+              print "#{attribute}"
+
+            end
+            puts "/n"
+          end
+
+        end
 
       when 2 
 
         puts "Please select the attributes you wish to read seperated by space"
         attributes = gets.strip.chomp
-        attributes.split(" ").join(",")!
+        attributes.split(" ").join(",")
 
         sql = "SELECT ? FROM fruits"
         db.execute(sql,attributes)
@@ -87,7 +113,7 @@ class Fruit
 
     puts "Please type the attributes and the values that you wish to update seperated by space"
     choice = gets.strip.chomp
-    choice.split(" ")!
+    choice.split(" ")
 
     choice.each do |attribute|
 
@@ -124,13 +150,15 @@ class Fruit
         db.execute(sql,selection)
 
       end
-
-
   end 
 end
 
 
 class Crud
+
+  def self.selection
+
+    my_crud = Crud.new
 
     puts "Please select the option you wish:"
     puts "1. CREATE"
@@ -146,14 +174,17 @@ class Crud
       when 1
         Fruit.make_from_user_questions
       when 2
-        puts "hello"
+        Fruit.read_from_user_questions
       when 3
-        puts "hello"
+        Fruit.update_from_user_questions
       when 4
-        puts "hello"
+        Fruit.delete_from_user_questions
+
     end
+
+  end
 
 end
 
-
+Crud.selection
 
