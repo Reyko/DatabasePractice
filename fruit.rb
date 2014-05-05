@@ -8,9 +8,7 @@ class Fruit
   attr_accessor :country_of_origin
 
 
-  attr_accessor :attribute
-
-
+  db = SQLITE3::Database.new 'fruits.db'
   def self.make_from_user_questions
    
     f = Fruit.new
@@ -31,8 +29,6 @@ class Fruit
     puts "What is the country of origin?"
     f.country_of_origin = gets.strip.chomp
 
-
-    db = SQLITE3::Database.new 'fruits.db'
   
     begin
 
@@ -64,7 +60,7 @@ class Fruit
     puts "1. I want to read all the attributes of the table"
     puts "2. I want to read specific attributes of the table"
     
-    choice = gets.strip.chomp
+    choice = gets.chomp
 
     case choice
 
@@ -83,6 +79,22 @@ class Fruit
         db.execute(sql,attributes)
 
       end
+  end
+
+  def self.update_from_user_questions
+
+    f = Fruit.new
+
+    puts "Please type the attributes and the values that you wish to update seperated by space"
+    choice = gets.strip.chomp
+    choice.split(" ")!
+
+    choice.each do |attribute|
+
+        sql = "UPDATE fruits SET ?"
+        db.execute(sql,attribute)
+
+    end      
   end
 
 end
