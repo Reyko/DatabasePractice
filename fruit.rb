@@ -3,16 +3,28 @@ require 'pry'
 
 
 class Fruit
+  attr_accessor :id
   attr_accessor :name
   attr_accessor :colour
   attr_accessor :prickly_or_not
   attr_accessor :requires_peeling
   attr_accessor :country_of_origin
 
+  
 
   def self.connect_to_db
+
     db = SQLite3::Database.new 'fruits.db' 
     yield db
+
+  end
+
+
+  def self.to_s(fruit) 
+     
+    fruits = "#{fruit.name}||#{fruit.colour}||#{fruit.prickly_or_not}||#{fruit.requires_peeling}||#{fruit.country_of_origin}"
+    fruits
+
   end
 
   def self.make_from_user_questions
@@ -36,7 +48,6 @@ class Fruit
     f.country_of_origin = gets.strip.chomp
 
    
-    
 
      connect_to_db do |db|
 
@@ -47,12 +58,12 @@ class Fruit
             db.execute(sql)
           
          
-        rescue Exception=>e 
+        rescue Exception => e 
       
             sql = "INSERT INTO fruits (name,colour,prickly_or_not,requires_peeling,country_of_origin) VALUES(?,?,?,?,?)"
             db.execute(sql,f.name,f.colour,f.prickly_or_not,f.requires_peeling,f.country_of_origin)
 
-            binding.pry
+            # binding.pry
             Crud.selection
             
         ensure
@@ -60,6 +71,7 @@ class Fruit
             sql = "INSERT INTO fruits (name,colour, prickly_or_not, requires_peeling, country_of_origin) VALUES(?,?,?,?,?)"
 
             db.execute(sql,f.name,f.colour,f.prickly_or_not,f.requires_peeling,f.country_of_origin)
+
         end  
 
     end
@@ -69,9 +81,9 @@ class Fruit
 
     f = Fruit.new
 
-    puts "What attribute would you like to read?"
-    puts "1. I want to read all the attributes of the table"
-    puts "2. I want to read specific attributes of the table"
+    puts "Please select an option:"
+    puts "1. I want all fruits to be displayed"
+    puts "2. I want to a specific fruit"
     
     choice = gets.chomp.to_i
 
@@ -82,28 +94,41 @@ class Fruit
         connect_to_db do |db|
           sql = "SELECT * FROM fruits"
           result = db.execute(sql)
-          binding.pry
+          # binding.pry
           result.each do |row|
-
-            row.each do |attribute|
-
-              print "#{attribute}"
-
-            end
-            puts "/n"
+              f.id = row[0]
+              f.name = row[1]
+              f.colour = row[2]
+              f.prickly_or_not = row[3]
+              f.requires_peeling = row[4]
+              f.country_of_origin = row[5]
+              yield f
           end
-
+          
         end
 
       when 2 
 
-        puts "Please select the attributes you wish to read seperated by space"
-        attributes = gets.strip.chomp
-        attributes.split(" ").join(",")
+        puts "Please the fruit that you wish"
+        fruit = gets.strip.chomp
+        # attributes.split(" ").join(",")
+        # binding.pry
 
-        sql = "SELECT ? FROM fruits"
-        db.execute(sql,attributes)
+        connect_to_db do |db|
+          sql = "SELECT * FROM fruits WHERE name = ?"
 
+          result = db.execute(sql,fruit)
+
+            result.each do |row|
+                f.id = row[0]
+                f.name = row[1]
+                f.colour = row[2]
+                f.prickly_or_not = row[3]
+                f.requires_peeling = row[4]
+                f.country_of_origin = row[5]
+                yield f
+            end
+        end
       end
   end
 
@@ -132,13 +157,15 @@ class Fruit
 
     choice = gets.strip.chomp.to_i
 
-
     case choice
 
       when 1
+
         sql = "DELETE FROM fruits"
         db.execute(sql)
+
       when 2
+
         puts "Please select the id you wish to delete"
 
         sql = "SELECT * FROM fruits"
@@ -158,29 +185,50 @@ class Crud
 
   def self.selection
 
-    my_crud = Crud.new
-
-    puts "Please select the option you wish:"
-    puts "1. CREATE"
-    puts "2. READ"
-    puts "3. UPDATE"
-    puts "4. DELETE"
-
-    choice = gets.strip.chomp.to_i
+   my_crud = Crud.new
 
 
-    case choice
+   while(true)   
 
-      when 1
-        Fruit.make_from_user_questions
-      when 2
-        Fruit.read_from_user_questions
-      when 3
-        Fruit.update_from_user_questions
-      when 4
-        Fruit.delete_from_user_questions
+      puts "Please select the option you wish:"
+      puts "1. CREATE"
+      puts "2. READ"
+      puts "3. UPDATE"
+      puts "4. DELETE"
+      puts "5. EXIT"
 
-    end
+      choice = gets.strip.chomp.to_i
+
+   
+      case choice
+
+        when 1
+
+          Fruit.make_from_user_questions
+
+        when 2
+
+          Fruit.read_from_user_questions do |fruit|
+
+              puts Fruit.to_s(fruit)
+
+          end
+
+        when 3
+
+          Fruit.update_from_user_questions
+
+        when 4
+
+          Fruit.delete_from_user_questions
+
+        when 5
+
+          break
+
+      end
+
+    end  
 
   end
 
