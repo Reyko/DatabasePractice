@@ -164,14 +164,14 @@ class Fruit
     case choice
     when 1
       sql = "DELETE FROM fruits"
-      db.execute(sql)
     when 2
       puts "Please select the fruit you wish to delete by typing its id"
-      sql = "SELECT * FROM fruits"
-      db.execute(sql)
       selection = gets.chomp.to_i
-      sql = "DELETE FROM fruits where id = ?"
-      db.execute(sql,selection)
+      
+      sql = "DELETE FROM fruits WHERE id = #{selection}"
+    end
+    connect_to_db do |db|
+      db.execute(sql)
     end
   end 
 end
