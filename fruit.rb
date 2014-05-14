@@ -19,7 +19,7 @@ class Fruit
 
 
   def self.to_s(fruit) 
-    fruits = "#{fruit.name}||#{fruit.colour}||#{fruit.prickly_or_not}||#{fruit.requires_peeling}||#{fruit.country_of_origin}"
+    fruits = "#{fruit.id}||#{fruit.name}||#{fruit.colour}||#{fruit.prickly_or_not}||#{fruit.requires_peeling}||#{fruit.country_of_origin}"
     fruits
   end
 
@@ -89,7 +89,7 @@ class Fruit
         end
       end
     when 2 
-      puts "Please the fruit that you wish"
+      puts "Please type the name of the fruit that you wish"
       fruit = gets.strip.chomp
       
       connect_to_db do |db|
